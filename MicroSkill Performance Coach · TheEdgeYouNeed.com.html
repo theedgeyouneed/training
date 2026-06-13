@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MicroSkill Performance Coach · TheEdgeYouNeed.com</title>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #0D1117; color: #EAE8E1; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', sans-serif; font-size: 15px; line-height: 1.6; }
+.root { max-width: 700px; margin: 0 auto; padding: 40px 24px 80px; }
+.progress { display: flex; align-items: flex-start; margin-bottom: 44px; }
+.ps { display: flex; flex-direction: column; align-items: center; gap: 5px; min-width: 52px; }
+.pc { width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0; }
+.pc.done { background: rgba(201,168,76,0.18); border: 1.5px solid #C9A84C; color: #C9A84C; }
+.pc.active { background: #C9A84C; border: 1.5px solid #C9A84C; color: #0A0E14; }
+.pc.future { background: transparent; border: 1.5px solid #2E4055; color: #4E6878; }
+.pl { font-size: 9px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; white-space: nowrap; }
+.pl.done, .pl.active { color: #C9A84C; }
+.pl.future { color: #4E6878; }
+.pline { flex: 1; height: 1px; background: #2E4055; margin-top: 13px; min-width: 16px; }
+.ey { font-size: 10px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: #C9A84C; margin-bottom: 8px; }
+.h1 { font-family: Georgia,'Times New Roman',serif; font-size: 28px; font-weight: normal; color: #EAE8E1; line-height: 1.25; margin-bottom: 10px; }
+.desc { font-size: 14px; color: #9ABACE; line-height: 1.75; margin-bottom: 26px; max-width: 560px; }
+.hi { color: #C9A84C; font-style: normal; }
+.field-label { display: block; font-size: 12px; font-weight: 600; color: #8AAABE; margin-bottom: 7px; letter-spacing: 0.03em; }
+input[type=text], input[type=password], textarea { width: 100%; min-width: 0; background: #111A26; border: 1px solid #2E4055; border-radius: 4px; color: #EAE8E1; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 14.5px; line-height: 1.6; padding: 11px 14px; transition: border-color 0.12s; outline: none; resize: none; }
+input[type=text]:focus, input[type=password]:focus, textarea:focus { border-color: #C9A84C; }
+input[type=text]::placeholder, input[type=password]::placeholder, textarea::placeholder { color: #4E6878; }
+.mb12 { margin-bottom: 12px; }
+.mb16 { margin-bottom: 16px; }
+.mb24 { margin-bottom: 24px; }
+.btn-p { display: inline-flex; align-items: center; gap: 8px; padding: 12px 22px; background: #C9A84C; color: #0A0E14; border: none; border-radius: 4px; font-size: 14px; font-weight: 700; cursor: pointer; transition: background 0.12s; white-space: nowrap; }
+.btn-p:hover:not(:disabled) { background: #D6B85C; }
+.btn-p:disabled { background: #1E2D3E; color: #4E6878; cursor: not-allowed; }
+.btn-g { display: inline-flex; align-items: center; gap: 6px; padding: 10px 16px; background: transparent; border: 1px solid #2E4055; border-radius: 4px; color: #8AAABE; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.12s; white-space: nowrap; }
+.btn-g:hover { border-color: #8AAABE; color: #EAE8E1; }
+.btn-sm { padding: 7px 12px; font-size: 12px; }
+.brow { display: flex; gap: 8px; margin-top: 20px; flex-wrap: wrap; align-items: center; }
+.loading { display: flex; flex-direction: column; align-items: center; padding: 64px 0; gap: 18px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.ring { width: 36px; height: 36px; border: 3px solid #1E2D3E; border-top-color: #C9A84C; border-radius: 50%; animation: spin 0.8s linear infinite; }
+.loading-msg { font-size: 13px; color: #8AAABE; letter-spacing: 0.03em; }
+.choices { display: flex; flex-direction: column; gap: 7px; }
+.ch { display: flex; align-items: flex-start; gap: 13px; padding: 15px 17px; background: #192030; border: 1px solid #2E4055; border-radius: 5px; cursor: pointer; transition: all 0.12s; text-align: left; width: 100%; }
+.ch:hover { border-color: rgba(201,168,76,0.55); }
+.ch.sel { border-color: #C9A84C; background: rgba(201,168,76,0.07); }
+.ch.custom-ch { border-style: dashed; }
+.cn { width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; flex-shrink: 0; margin-top: 1px; }
+.ch.sel .cn { background: #C9A84C; color: #0A0E14; }
+.ch:not(.sel) .cn { background: rgba(201,168,76,0.1); border: 1px solid rgba(201,168,76,0.35); color: #C9A84C; }
+.ct { font-size: 14px; color: #D4E4F0; line-height: 1.55; }
+.ctag { font-size: 9px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #8AAABE; margin-top: 3px; }
+.hcard { display: flex; flex-direction: column; gap: 5px; padding: 17px 19px; background: #192030; border: 1px solid #2E4055; border-radius: 5px; cursor: pointer; transition: all 0.12s; width: 100%; text-align: left; margin-bottom: 7px; }
+.hcard:hover { border-color: rgba(201,168,76,0.55); }
+.hcard.sel { border-color: #C9A84C; background: rgba(201,168,76,0.07); }
+.hcard.custom-hc { border-style: dashed; }
+.hn { font-size: 14px; font-weight: 600; color: #EAE8E1; }
+.hd { font-size: 13px; color: #8AAABE; line-height: 1.6; }
+.hl { font-size: 9px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; margin-top: 3px; }
+.hcard.sel .hl { color: #C9A84C; }
+.hcard:not(.sel) .hl { color: #4E6878; }
+.add-box { background: #111A26; border: 1px solid #2E4055; border-radius: 5px; padding: 16px; margin-top: 8px; }
+.add-box-title { font-size: 12px; font-weight: 600; color: #8AAABE; margin-bottom: 10px; letter-spacing: 0.03em; }
+.ibox { background: #192030; border: 1px solid #2E4055; border-radius: 5px; padding: 20px; }
+.ipfx { font-size: 13px; color: #8AAABE; margin-bottom: 8px; }
+.ieg { font-size: 11px; color: #5A7888; margin-top: 8px; font-style: italic; line-height: 1.6; }
+.ieg a { color: #8AAABE; }
+.summary { background: #192030; border: 1px solid #2E4055; border-left: 3px solid #C9A84C; border-radius: 0 5px 5px 0; padding: 18px 20px; margin-bottom: 26px; }
+.sr { display: flex; gap: 12px; margin-bottom: 7px; font-size: 13px; }
+.sr:last-child { margin-bottom: 0; }
+.sl { color: #8AAABE; font-weight: 600; min-width: 80px; flex-shrink: 0; }
+.sv { color: #D4E4F0; line-height: 1.5; }
+.track-top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; }
+.track-title { font-family: Georgia,'Times New Roman',serif; font-size: 18px; font-weight: normal; color: #EAE8E1; }
+.track-count { font-size: 12px; color: #8AAABE; }
+.track-sub { font-size: 12px; color: #6A8898; margin-bottom: 14px; }
+.tgrid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 5px; margin-bottom: 8px; }
+.td { aspect-ratio: 1; border: 1px solid #2E4055; border-radius: 3px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.12s; color: #7A9AAE; background: #111A26; user-select: none; }
+.td:hover { border-color: rgba(201,168,76,0.5); color: #C9A84C; }
+.td.ck { background: rgba(201,168,76,0.15); border-color: #C9A84C; color: #C9A84C; font-size: 14px; }
+.tnote { font-size: 11px; color: #4E6878; margin-bottom: 20px; }
+.ocard { background: #192030; border: 1px solid #2E4055; border-radius: 5px; padding: 22px; margin-top: 8px; }
+.oh { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 10px; }
+.otitle { font-family: Georgia,'Times New Roman',serif; font-size: 18px; font-weight: normal; color: #EAE8E1; }
+.bcopy { padding: 7px 14px; background: transparent; border: 1px solid #C9A84C; border-radius: 3px; color: #C9A84C; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.12s; }
+.bcopy:hover { background: rgba(201,168,76,0.1); }
+.bcopy.ck2 { border-color: #5ACA8A; color: #5ACA8A; }
+.setup-instr { font-size: 12px; color: #8AAABE; margin-bottom: 12px; line-height: 1.7; }
+.pbox { background: #080B10; border: 1px solid #2E4055; border-radius: 4px; padding: 18px; font-family: 'JetBrains Mono','Fira Code',Consolas,monospace; font-size: 11px; line-height: 1.85; color: #8AAABE; white-space: pre-wrap; word-break: break-word; max-height: 300px; overflow-y: auto; }
+.err { background: rgba(220,80,80,0.1); border: 1px solid rgba(220,80,80,0.3); border-radius: 4px; padding: 11px 15px; font-size: 13px; color: #F0A0A0; margin-bottom: 18px; }
+.copyright { margin-top: 32px; padding-top: 18px; border-top: 1px solid #1E2D3E; text-align: center; display: flex; align-items: center; justify-content: center; gap: 16px; flex-wrap: wrap; }
+.copyright a { font-size: 11px; color: #4E6878; text-decoration: none; letter-spacing: 0.08em; transition: color 0.12s; }
+.copyright a:hover { color: #8AAABE; }
+.divider { height: 1px; background: #1E2D3E; margin: 24px 0; }
+.key-note { font-size: 13px; color: #5A7888; margin-top: 24px; line-height: 1.6; }
+.key-note a { color: #8AAABE; }
+</style>
+</head>
+<body>
+<div id="root"><div style="display:flex;align-items:center;justify-content:center;min-height:100vh;background:#0D1117;color:#8AAABE;font-size:14px;font-family:sans-serif;letter-spacing:0.04em;">Loading...</div></div>
+
+<script type="text/babel">
+const { useState, useEffect } = React;
+
+const DECOMP_SYS = `You decompose development areas into specific, observable micro-skills, using context provided about the person's role and situation.
+
+Rules:
+- Each micro-skill names a behavior the person can DO — not a trait, not a general capability
+- Active verb required: what the person does in a specific moment
+- 8–14 words per entry, concrete enough to recognize in practice
+- Use the context to make micro-skills specific to their situation and role
+- Produce exactly 6 micro-skills
+
+Output: valid JSON only, no preamble, no markdown fences.
+{"microskills":["...","...","...","...","...","..."]}`;
+
+const HABITS_SYS = `You design practice habits for a specific micro-skill.
+
+Rules:
+- Each habit takes 5–10 minutes
+- Each habit anchors to a natural daily trigger the person already has
+- Sequence: #1 lowest friction, #2 moderate, #3 highest challenge
+- No motivational language — concrete practice design only
+- Exactly 3 habits
+
+Output: valid JSON only, no preamble, no markdown fences.
+{"habits":[{"name":"3–4 word name","description":"one sentence: what to do and when"},{"name":"...","description":"..."},{"name":"...","description":"..."}]}`;
+
+const PHASE_STEP = { apikey: 0, goal: 1, clarify: 1, "load-sk": 2, "sel-sk": 2, "load-hb": 3, "sel-hb": 3, intention: 4, complete: 5 };
+const STEP_LABELS = ["Focus", "Micro-skill", "Habit", "Trigger", "Plan"];
+const FRICTION = ["Lowest friction", "Medium challenge", "Highest challenge"];
+
+async function callAPI(system, user, apiKey) {
+  const res = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-api-key": apiKey,
+      "anthropic-version": "2023-06-01",
+      "anthropic-dangerous-direct-browser-access": "true"
+    },
+    body: JSON.stringify({ model: "claude-sonnet-4-6", max_tokens: 1000, system, messages: [{ role: "user", content: user }] })
+  });
+  const data = await res.json();
+  if (data.error) throw new Error(data.error.message);
+  return (data.content || []).map(b => b.text || "").join("");
+}
+
+function parseJSON(raw) {
+  let t = raw.replace(/```json\s*/gi, "").replace(/```\s*/gi, "").trim();
+  const m = t.match(/\{[\s\S]*\}/);
+  return JSON.parse(m ? m[0] : t);
+}
+
+function buildPrompt(goal, skill, habitName, habitDesc, trigger) {
+  return `You are my personal development coach. Your entire job is to help me build one specific micro-skill through deliberate daily practice.
+
+════════════════════════════════════
+MY DEVELOPMENT FOCUS
+════════════════════════════════════
+
+Development area: ${goal}
+Target micro-skill: ${skill}
+
+Work from the micro-skill, not the broader area. Every session anchors to this specific behavior.
+
+════════════════════════════════════
+MY DAILY PRACTICE
+════════════════════════════════════
+
+Habit: ${habitName}
+Practice: ${habitDesc}
+${trigger ? `Activation trigger: When ${trigger}, I practice.` : ""}
+
+This is my Week 1 commitment. Hold me to it.
+
+════════════════════════════════════
+HOW TO COACH ME
+════════════════════════════════════
+
+Three modes:
+
+1. PRE-PRACTICE CHECK-IN
+When I say I am about to do my practice: make the micro-skill concrete. Ask me to name one specific moment today where I can apply it. Push me to say exactly what it will look like.
+
+2. PRACTICE DEBRIEF
+When I describe what I did: do not ask "how did it go?" — ask "did I exercise the micro-skill or did I default to my old pattern?" Push for evidence. When I am vague, make me get specific.
+
+3. WEEKLY REVIEW
+When I check in at week's end: go day by day. Where did I show up? Where did I avoid? What does the pattern say? Close with one specific commitment for next week.
+
+Your rules:
+— Always work from the specific micro-skill. Never drift to the general area.
+— When I am vague, demand specifics.
+— When I am rationalizing missed practice, name it plainly.
+— Never end a session without a concrete next step.
+— Missed days are data. Do not moralize — but do not let me minimize them either.`;
+}
+
+function buildPrintHTML(goal, skill, habitName, habitDesc, trigger) {
+  const days = Array.from({ length: 30 }, (_, i) => i + 1);
+  return '<!DOCTYPE html>' +
+    '<html lang="en"><head><meta charset="UTF-8">' +
+    '<title>30-Day Tracker \u00b7 ' + habitName + '</title>' +
+    '<style>' +
+    '* { box-sizing: border-box; margin: 0; padding: 0; }' +
+    'body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; padding: 40px 48px; background: #fff; color: #1a1a1a; max-width: 860px; margin: 0 auto; }' +
+    '.brand { font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: #999; margin-bottom: 12px; }' +
+    '.brand a { color: #999; text-decoration: none; }' +
+    'h1 { font-family: Georgia, serif; font-size: 26px; font-weight: normal; margin-bottom: 10px; }' +
+    '.meta { font-size: 13px; color: #555; line-height: 1.9; border-bottom: 1.5px solid #1a1a1a; padding-bottom: 20px; margin-bottom: 28px; }' +
+    '.meta strong { color: #1a1a1a; }' +
+    '.sec-label { font-size: 10px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: #999; margin-bottom: 12px; }' +
+    '.grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 8px; margin-bottom: 32px; }' +
+    '.day { border: 1.5px solid #D8D8D8; border-radius: 3px; aspect-ratio: 1; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; color: #bbb; }' +
+    '.nline { border-bottom: 1px solid #EBEBEB; margin-bottom: 22px; }' +
+    '.footer { margin-top: 36px; text-align: center; font-size: 10px; color: #bbb; letter-spacing: 0.1em; }' +
+    '.print-btn { display: block; margin: 28px auto 0; padding: 11px 28px; background: #1a1a1a; color: white; border: none; border-radius: 4px; font-size: 14px; cursor: pointer; font-family: inherit; }' +
+    '@media print { .print-btn { display: none; } body { padding: 24px 32px; } }' +
+    '</style></head><body>' +
+    '<div class="brand"><a href="https://www.TheEdgeYouNeed.com" target="_blank">TheEdgeYouNeed.com</a> &nbsp;&middot;&nbsp; 30-Day Practice Tracker</div>' +
+    '<h1>' + habitName + '</h1>' +
+    '<div class="meta">' +
+    '<strong>Development area:</strong> ' + goal + '<br>' +
+    '<strong>Micro-skill:</strong> ' + skill + '<br>' +
+    '<strong>Daily practice:</strong> ' + habitDesc +
+    (trigger ? '<br><strong>My trigger:</strong> When ' + trigger : '') +
+    '</div>' +
+    '<div class="sec-label">Mark each day you practice</div>' +
+    '<div class="grid">' + days.map(d => '<div class="day">' + d + '</div>').join("") + '</div>' +
+    '<div class="sec-label" style="margin-top:4px">Weekly reflections</div>' +
+    Array.from({ length: 5 }, () => '<div class="nline"></div>').join("") +
+    '<div class="footer">&copy; TheEdgeYouNeed.com &nbsp;&middot;&nbsp; Professional Growth through Personal Development</div>' +
+    '<button class="print-btn" onclick="window.print()">Print / Save as PDF &rarr;</button>' +
+    '</body></html>';
+}
+
+function restoreSession(s, setters) {
+  const { setGoal, setGoalInput, setContext, setSkills, setAiSkillCount, setSelSk, setHabits, setAiHabitCount, setSelHb, setTriggerInput, setCoachPrompt, setPhase } = setters;
+  setGoal(s.goal || ""); setGoalInput(s.goal || "");
+  setContext(s.context || "");
+  setSkills(s.skills || []); setAiSkillCount(s.aiSkillCount || 0);
+  setSelSk(s.selSk ?? null);
+  setHabits(s.habits || []); setAiHabitCount(s.aiHabitCount || 0);
+  setSelHb(s.selHb ?? null);
+  setTriggerInput(s.trigger || "");
+  setCoachPrompt(s.coachPrompt || "");
+  setPhase(s.phase || "goal");
+}
+
+function MicroSkillCoach() {
+  const [phase, setPhase] = useState("goal");
+  const [apiKey, setApiKey] = useState("");
+  const [apiKeyInput, setApiKeyInput] = useState("");
+  const [goalInput, setGoalInput] = useState("");
+  const [goal, setGoal] = useState("");
+  const [context, setContext] = useState("");
+  const [skills, setSkills] = useState([]);
+  const [aiSkillCount, setAiSkillCount] = useState(0);
+  const [selSk, setSelSk] = useState(null);
+  const [showCustomSk, setShowCustomSk] = useState(false);
+  const [customSkInput, setCustomSkInput] = useState("");
+  const [habits, setHabits] = useState([]);
+  const [aiHabitCount, setAiHabitCount] = useState(0);
+  const [selHb, setSelHb] = useState(null);
+  const [showCustomHb, setShowCustomHb] = useState(false);
+  const [customHbName, setCustomHbName] = useState("");
+  const [customHbDesc, setCustomHbDesc] = useState("");
+  const [triggerInput, setTriggerInput] = useState("");
+  const [tracker, setTracker] = useState({});
+  const [copied, setCopied] = useState(false);
+  const [err, setErr] = useState("");
+  const [coachPrompt, setCoachPrompt] = useState("");
+
+  useEffect(() => {
+    const savedKey = localStorage.getItem("msc-apikey");
+    if (!savedKey) { setPhase("apikey"); return; }
+    setApiKey(savedKey);
+    try {
+      const sr = localStorage.getItem("msc-session");
+      if (sr) {
+        const s = JSON.parse(sr);
+        restoreSession(s, { setGoal, setGoalInput, setContext, setSkills, setAiSkillCount, setSelSk, setHabits, setAiHabitCount, setSelHb, setTriggerInput, setCoachPrompt, setPhase });
+      }
+    } catch {}
+    try {
+      const tr = localStorage.getItem("msc-tracker");
+      if (tr) setTracker(JSON.parse(tr) || {});
+    } catch {}
+  }, []);
+
+  const saveApiKey = () => {
+    const key = apiKeyInput.trim();
+    if (!key) return;
+    localStorage.setItem("msc-apikey", key);
+    setApiKey(key);
+    setApiKeyInput("");
+    try {
+      const sr = localStorage.getItem("msc-session");
+      if (sr) {
+        const s = JSON.parse(sr);
+        restoreSession(s, { setGoal, setGoalInput, setContext, setSkills, setAiSkillCount, setSelSk, setHabits, setAiHabitCount, setSelHb, setTriggerInput, setCoachPrompt, setPhase });
+        return;
+      }
+    } catch {}
+    setPhase("goal");
+  };
+
+  const changeApiKey = (e) => {
+    e.preventDefault();
+    localStorage.removeItem("msc-apikey");
+    setApiKey("");
+    setApiKeyInput("");
+    setPhase("apikey");
+  };
+
+  const save = (data) => {
+    try { localStorage.setItem("msc-session", JSON.stringify(data)); } catch {}
+  };
+
+  const goToClarify = () => {
+    const g = goalInput.trim();
+    if (!g) return;
+    setGoal(g); setErr(""); setPhase("clarify");
+  };
+
+  const decomposeSkill = async (isRegen = false) => {
+    const prevSkills = [...skills];
+    const prevCount = aiSkillCount;
+    setPhase("load-sk"); setErr("");
+    try {
+      let msg = `Development area: ${goal}\nContext from the person: ${context.trim() || "No additional context provided"}`;
+      if (isRegen && prevSkills.length) {
+        const avoidList = prevSkills.slice(0, prevCount).map(sk => `- ${sk}`).join("\n");
+        msg += `\n\nGenerate a completely different set. Do not repeat any of these:\n${avoidList}`;
+      }
+      const raw = await callAPI(DECOMP_SYS, msg, apiKey);
+      const parsed = parseJSON(raw);
+      const sk = (parsed.microskills || []).slice(0, 7);
+      if (!sk.length) throw new Error();
+      const customSkills = prevSkills.slice(prevCount);
+      setSkills([...sk, ...customSkills]);
+      setAiSkillCount(sk.length);
+      setSelSk(null); setShowCustomSk(false);
+      setPhase("sel-sk");
+    } catch {
+      setSkills(prevSkills); setAiSkillCount(prevCount);
+      setErr("Couldn't load microskills. Check your API key and connection, then try again.");
+      setPhase(isRegen ? "sel-sk" : "clarify");
+    }
+  };
+
+  const addCustomSkill = () => {
+    const sk = customSkInput.trim();
+    if (!sk) return;
+    const newSkills = [...skills, sk];
+    setSkills(newSkills);
+    setSelSk(newSkills.length - 1);
+    setCustomSkInput(""); setShowCustomSk(false);
+  };
+
+  const confirmSkill = async () => {
+    if (selSk === null) return;
+    setPhase("load-hb"); setErr("");
+    try {
+      const raw = await callAPI(HABITS_SYS, `Micro-skill: ${skills[selSk]}`, apiKey);
+      const parsed = parseJSON(raw);
+      const hb = (parsed.habits || []).slice(0, 3);
+      if (!hb.length) throw new Error();
+      setHabits(hb); setAiHabitCount(hb.length);
+      setSelHb(null); setShowCustomHb(false);
+      setPhase("sel-hb");
+    } catch {
+      setErr("Couldn't generate habits. Try again.");
+      setPhase("sel-sk");
+    }
+  };
+
+  const addCustomHabit = () => {
+    const name = customHbName.trim();
+    if (!name) return;
+    const newHabits = [...habits, { name, description: customHbDesc.trim() || "" }];
+    setHabits(newHabits);
+    setSelHb(newHabits.length - 1);
+    setCustomHbName(""); setCustomHbDesc(""); setShowCustomHb(false);
+  };
+
+  const confirmHabit = () => { if (selHb !== null) setPhase("intention"); };
+
+  const complete = () => {
+    const h = habits[selHb];
+    const trigger = triggerInput.trim();
+    const cp = buildPrompt(goal, skills[selSk], h.name, h.description, trigger);
+    setCoachPrompt(cp);
+    setPhase("complete");
+    save({ goal, context, skills, aiSkillCount, selSk, habits, aiHabitCount, selHb, trigger, coachPrompt: cp, phase: "complete" });
+  };
+
+  const toggleDay = (d) => {
+    const updated = { ...tracker, [d]: !tracker[d] };
+    setTracker(updated);
+    try { localStorage.setItem("msc-tracker", JSON.stringify(updated)); } catch {}
+  };
+
+  const openPrintWindow = () => {
+    const h = habits[selHb];
+    const html = buildPrintHTML(goal, skills[selSk], h?.name || "", h?.description || "", triggerInput.trim());
+    const win = window.open("", "_blank", "width=920,height=820,resizable=yes");
+    if (win) { win.document.write(html); win.document.close(); }
+  };
+
+  const copy = async () => {
+    try { await navigator.clipboard.writeText(coachPrompt); setCopied(true); setTimeout(() => setCopied(false), 2500); } catch {}
+  };
+
+  const reset = () => {
+    localStorage.removeItem("msc-session");
+    localStorage.removeItem("msc-tracker");
+    setPhase("goal"); setGoalInput(""); setGoal(""); setContext("");
+    setSkills([]); setAiSkillCount(0); setSelSk(null);
+    setShowCustomSk(false); setCustomSkInput("");
+    setHabits([]); setAiHabitCount(0); setSelHb(null);
+    setShowCustomHb(false); setCustomHbName(""); setCustomHbDesc("");
+    setTriggerInput(""); setTracker({}); setCoachPrompt("");
+    setCopied(false); setErr("");
+  };
+
+  const curStep = PHASE_STEP[phase] || 1;
+  const doneCount = Object.values(tracker).filter(Boolean).length;
+
+  const Progress = () => (
+    <div className="progress">
+      {STEP_LABELS.flatMap((label, i) => {
+        const n = i + 1;
+        const st = n < curStep ? "done" : n === curStep ? "active" : "future";
+        const items = [
+          <div key={"s" + i} className="ps">
+            <div className={"pc " + st}>{st === "done" ? "✓" : n}</div>
+            <div className={"pl " + st}>{label}</div>
+          </div>
+        ];
+        if (i < STEP_LABELS.length - 1) items.push(<div key={"l" + i} className="pline" />);
+        return items;
+      })}
+    </div>
+  );
+
+  return (
+    <div className="root">
+      {phase !== "apikey" && <Progress />}
+
+      {phase === "apikey" && (
+        <div style={{ paddingTop: 16 }}>
+          <div className="ey" style={{ marginBottom: 14 }}>TheEdgeYouNeed.com</div>
+          <h1 className="h1" style={{ marginBottom: 14 }}>MicroSkill Performance Coach</h1>
+          <p className="desc">Map any development area to specific micro-skills. Pick the one that matters most. Build a 30-day practice plan. Walk away with an AI coach prompt for ongoing support.</p>
+          <div className="ibox mb24">
+            <div className="add-box-title" style={{ marginBottom: 12 }}>Enter your Anthropic API key</div>
+            <input type="password" placeholder="sk-ant-api03-..."
+              value={apiKeyInput} onChange={e => setApiKeyInput(e.target.value)}
+              onKeyDown={e => e.key === "Enter" && apiKeyInput.trim() && saveApiKey()}
+              style={{ marginBottom: 10 }} />
+            <p className="ieg">
+              Stored in your browser only. Never sent anywhere except Anthropic's servers directly.
+              Get a key at <a href="https://console.anthropic.com" target="_blank" rel="noopener">console.anthropic.com</a>.
+            </p>
+          </div>
+          <div className="brow">
+            <button className="btn-p" disabled={!apiKeyInput.trim()} onClick={saveApiKey}>Start →</button>
+          </div>
+          <div className="copyright" style={{ marginTop: 48 }}>
+            <a href="https://www.TheEdgeYouNeed.com" target="_blank" rel="noopener noreferrer">© TheEdgeYouNeed.com</a>
+          </div>
+        </div>
+      )}
+
+      {phase === "goal" && (
+        <>
+          <div className="ey">Step 1 of 5</div>
+          <h1 className="h1">Where do you want to grow?</h1>
+          <p className="desc">Name the skill or development area. "Conflict management" works. "Be better" doesn't.</p>
+          {err && <div className="err">{err}</div>}
+          <div className="mb16">
+            <input type="text" placeholder="e.g. executive presence, strategic thinking, delegation, conflict management..."
+              value={goalInput} onChange={e => setGoalInput(e.target.value)}
+              onKeyDown={e => e.key === "Enter" && goalInput.trim() && goToClarify()} />
+          </div>
+          <div className="brow">
+            <button className="btn-p" disabled={!goalInput.trim()} onClick={goToClarify}>Next →</button>
+          </div>
+        </>
+      )}
+
+      {phase === "clarify" && (
+        <>
+          <div className="ey">Step 1 of 5 — Sharpen the focus</div>
+          <h1 className="h1">Make it specific</h1>
+          <p className="desc">Generic input produces generic microskills. Describe the situations where <em className="hi">{goal}</em> shows up for you — your role, the context, the specific moments that matter.</p>
+          {err && <div className="err">{err}</div>}
+          <div className="mb16">
+            <label className="field-label">In what context does this come up? (role, situations, examples)</label>
+            <textarea rows={3} placeholder="e.g. I'm a VP leading a team of 12. I struggle to push back on my CEO's ideas in leadership meetings, especially when other leaders are agreeing with him..."
+              value={context} onChange={e => setContext(e.target.value)} />
+          </div>
+          <div className="brow">
+            <button className="btn-p" onClick={() => decomposeSkill(false)}>Map the microskills →</button>
+            <button className="btn-g" onClick={() => setPhase("goal")}>Back</button>
+          </div>
+        </>
+      )}
+
+      {phase === "load-sk" && (
+        <div className="loading">
+          <div className="ring" />
+          <div className="loading-msg">Mapping the microskills inside {goal}...</div>
+        </div>
+      )}
+
+      {phase === "sel-sk" && (
+        <>
+          <div className="ey">Step 2 of 5</div>
+          <h1 className="h1">Which microskill to target?</h1>
+          <p className="desc">
+            Development area: <em className="hi">{goal}</em><br />
+            Pick the one where your proficiency is lowest and improvement would have the biggest impact. One only.
+          </p>
+          {err && <div className="err">{err}</div>}
+          <div className="choices mb12">
+            {skills.map((sk, i) => (
+              <button key={i} className={"ch" + (selSk === i ? " sel" : "") + (i >= aiSkillCount ? " custom-ch" : "")} onClick={() => setSelSk(i)}>
+                <div className="cn">{i + 1}</div>
+                <div>
+                  <div className="ct">{sk}</div>
+                  {i >= aiSkillCount && <div className="ctag">Your own</div>}
+                </div>
+              </button>
+            ))}
+          </div>
+
+          {showCustomSk ? (
+            <div className="add-box mb16">
+              <div className="add-box-title">Add your own microskill</div>
+              <input type="text" className="mb12" placeholder="Describe a specific, observable behavior..."
+                value={customSkInput} onChange={e => setCustomSkInput(e.target.value)} />
+              <div className="brow" style={{ marginTop: 8 }}>
+                <button className="btn-g btn-sm" disabled={!customSkInput.trim()} onClick={addCustomSkill}>Add to list</button>
+                <button className="btn-g btn-sm" onClick={() => { setShowCustomSk(false); setCustomSkInput(""); }}>Cancel</button>
+              </div>
+            </div>
+          ) : (
+            <button className="btn-g btn-sm" style={{ marginBottom: 16 }} onClick={() => setShowCustomSk(true)}>+ Add my own</button>
+          )}
+
+          <div className="brow">
+            <button className="btn-p" disabled={selSk === null} onClick={confirmSkill}>This one →</button>
+            <button className="btn-g" onClick={() => decomposeSkill(true)}>↺ Regenerate list</button>
+            <button className="btn-g" onClick={() => { setPhase("clarify"); setErr(""); }}>Back</button>
+          </div>
+        </>
+      )}
+
+      {phase === "load-hb" && (
+        <div className="loading">
+          <div className="ring" />
+          <div className="loading-msg">Building practice habits for this microskill...</div>
+        </div>
+      )}
+
+      {phase === "sel-hb" && (
+        <>
+          <div className="ey">Step 3 of 5</div>
+          <h1 className="h1">Pick one habit to start with</h1>
+          <p className="desc">Targeting: <em className="hi">{skills[selSk]}</em><br />Pick the one most likely to stick. You can move to a harder one later.</p>
+          {err && <div className="err">{err}</div>}
+          <div className="mb12">
+            {habits.map((h, i) => (
+              <button key={i} className={"hcard" + (selHb === i ? " sel" : "") + (i >= aiHabitCount ? " custom-hc" : "")} onClick={() => setSelHb(i)}>
+                <div className="hn">{h.name}</div>
+                <div className="hd">{h.description}</div>
+                <div className="hl">{i < aiHabitCount ? FRICTION[i] : "Your own practice"}</div>
+              </button>
+            ))}
+          </div>
+
+          {showCustomHb ? (
+            <div className="add-box mb16">
+              <div className="add-box-title">Suggest your own practice</div>
+              <input type="text" className="mb12" placeholder="Habit name (3–4 words)..."
+                value={customHbName} onChange={e => setCustomHbName(e.target.value)} />
+              <textarea rows={2} placeholder="Describe the practice and when you'll do it..."
+                value={customHbDesc} onChange={e => setCustomHbDesc(e.target.value)} />
+              <div className="brow" style={{ marginTop: 8 }}>
+                <button className="btn-g btn-sm" disabled={!customHbName.trim()} onClick={addCustomHabit}>Add to list</button>
+                <button className="btn-g btn-sm" onClick={() => { setShowCustomHb(false); setCustomHbName(""); setCustomHbDesc(""); }}>Cancel</button>
+              </div>
+            </div>
+          ) : (
+            <button className="btn-g btn-sm" style={{ marginBottom: 16 }} onClick={() => setShowCustomHb(true)}>+ Suggest my own</button>
+          )}
+
+          <div className="brow">
+            <button className="btn-p" disabled={selHb === null} onClick={confirmHabit}>Start with this →</button>
+            <button className="btn-g" onClick={() => setPhase("sel-sk")}>Back</button>
+          </div>
+        </>
+      )}
+
+      {phase === "intention" && (
+        <>
+          <div className="ey">Step 4 of 5</div>
+          <h1 className="h1">Set your trigger</h1>
+          <p className="desc">A habit without a specific trigger is a wish. Anchor it to something that already happens every day and your follow-through rate doubles.</p>
+          <div className="ibox mb24">
+            <div className="ipfx">When...</div>
+            <input type="text" placeholder="[describe a specific daily moment in your schedule]"
+              value={triggerInput} onChange={e => setTriggerInput(e.target.value)} style={{ marginBottom: 14 }} />
+            <div className="ipfx">...I will practice: <em className="hi">{habits[selHb] && habits[selHb].name}</em></div>
+            <div className="ieg">Example: "When I wrap up my first meeting of the day..."</div>
+          </div>
+          <div className="brow">
+            <button className="btn-p" onClick={complete}>Build my plan →</button>
+            <button className="btn-g" onClick={() => setPhase("sel-hb")}>Back</button>
+          </div>
+        </>
+      )}
+
+      {phase === "complete" && (
+        <>
+          <div className="ey">Your development plan</div>
+          <h1 className="h1" style={{ marginBottom: 22 }}>You're set up to develop</h1>
+
+          <div className="summary">
+            <div className="sr"><span className="sl">Area</span><span className="sv">{goal}</span></div>
+            <div className="sr"><span className="sl">Micro-skill</span><span className="sv">{skills[selSk]}</span></div>
+            <div className="sr"><span className="sl">Daily habit</span><span className="sv">{habits[selHb] && habits[selHb].name} — {habits[selHb] && habits[selHb].description}</span></div>
+            {triggerInput && <div className="sr"><span className="sl">Trigger</span><span className="sv">When {triggerInput}</span></div>}
+          </div>
+
+          <div className="track-top">
+            <span className="track-title">30-Day Practice Tracker</span>
+            <span className="track-count">{doneCount} / 30</span>
+          </div>
+          <div className="track-sub">{habits[selHb] && habits[selHb].name} — click a day to log it</div>
+          <div className="tgrid">
+            {Array.from({ length: 30 }, (_, i) => i + 1).map(d => (
+              <div key={d} className={"td" + (tracker[d] ? " ck" : "")} onClick={() => toggleDay(d)}>{tracker[d] ? "✓" : d}</div>
+            ))}
+          </div>
+          <p className="tnote">Progress saves in your browser automatically.</p>
+
+          <div className="brow" style={{ marginBottom: 28 }}>
+            <button className="btn-g" onClick={openPrintWindow}>↓ Print / Save as PDF</button>
+          </div>
+
+          <div className="ocard">
+            <div className="oh">
+              <span className="otitle">Your AI Coach System Prompt</span>
+              <button className={"bcopy" + (copied ? " ck2" : "")} onClick={copy}>{copied ? "✓ Copied" : "Copy"}</button>
+            </div>
+            <p className="setup-instr">Paste this into a new <strong>Claude Project</strong> (claude.ai → Projects → New → Custom Instructions) or a <strong>ChatGPT Custom GPT</strong> (chatgpt.com → Explore GPTs → Create → Instructions). That becomes your ongoing development coach.</p>
+            <div className="pbox">{coachPrompt}</div>
+          </div>
+
+          <div className="divider" />
+          <div className="brow" style={{ marginTop: 0 }}>
+            <button className="btn-g" onClick={reset}>Start over with a new skill</button>
+          </div>
+
+          <div className="copyright">
+            <a href="https://www.TheEdgeYouNeed.com" target="_blank" rel="noopener noreferrer">© TheEdgeYouNeed.com</a>
+            <a href="#" onClick={changeApiKey}>Change API key</a>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<MicroSkillCoach />);
+</script>
+</body>
+</html>
